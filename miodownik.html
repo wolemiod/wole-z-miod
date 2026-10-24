@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Miodownik — klikaj miód</title>
+<style>
+:root{--gold:#f6b900;--honey:#ffcf4d;--ink:#2d2110;--cream:#fff8e7;--brown:#7a4317}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink);background:radial-gradient(circle at top,#fff1bb,#fffaf0 55%,#f7e5bc);min-height:100vh}
+header{padding:26px 18px 12px;text-align:center}header .logo{font-size:44px}h1{font-size:clamp(2rem,6vw,3.5rem);margin:0;letter-spacing:-1.5px}header p{margin:8px auto 0;max-width:650px;color:#74552a}
+.wrap{width:min(1100px,94%);margin:0 auto 50px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}
+.stat{background:#fffdf6;border:1px solid #f1d89b;border-radius:18px;padding:16px;text-align:center;box-shadow:0 5px 18px #7a43170c}.stat span{display:block;color:#85673a;font-size:.85rem}.stat strong{font-size:clamp(1.3rem,4vw,2rem)}
+.panel{background:#fffdf7;border:1px solid #f0d79b;border-radius:24px;padding:clamp(18px,4vw,30px);box-shadow:0 12px 35px #68400d12;margin:18px 0}
+.panel h2{margin:0 0 8px;font-size:1.45rem}.sub{color:#806640;margin:0 0 18px}
+.searchrow{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.searchrow input,.searchrow select{font:inherit;padding:11px 13px;border:1px solid #e7cf9b;border-radius:12px;background:white;min-width:0}.searchrow input{flex:1}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}.honey{border:1px solid #efd79d;border-radius:15px;padding:13px;text-align:left;background:#fffaf0;cursor:pointer;transition:.15s;color:var(--ink)}.honey:hover{transform:translateY(-2px);border-color:#e7ad17}.honey.active{background:#ffe7a0;border:2px solid #d89400;padding:12px}.honey .emoji{font-size:26px;display:block}.honey b{display:block;margin:5px 0 2px}.honey small{color:#876b3c}
+.clicker{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:18px}.jararea{text-align:center}.jar{border:0;background:transparent;cursor:pointer;font-size:clamp(100px,20vw,165px);line-height:1;filter:drop-shadow(0 12px 5px #8e5b1d20);transition:transform .08s;touch-action:manipulation}.jar:active{transform:scale(.92) rotate(-4deg)}.jar:focus-visible{outline:3px solid #bd7c00;border-radius:20px}.tapnote{font-size:.9rem;color:#86683b;margin-top:8px}.clickinfo .selected{color:#9a6410;font-weight:700}.bigcount{font-size:clamp(2rem,6vw,3.3rem);font-weight:850;letter-spacing:-1px;overflow-wrap:anywhere}.btn{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 16px;cursor:pointer}.primary{background:var(--gold);color:#382300;box-shadow:0 4px 0 #d99400}.primary:hover{filter:brightness(1.03)}.secondary{background:#fff1c8;color:#67410c;border:1px solid #efd08b}.progress{height:10px;border-radius:99px;background:#f4e5c5;overflow:hidden;margin:12px 0}.progress div{height:100%;width:0;background:linear-gradient(90deg,#e99b00,#ffd85c);transition:width .2s}
+footer{text-align:center;color:#8a7048;padding:10px 20px 35px;font-size:.85rem}.notice{font-size:.88rem;color:#806640;background:#fff4d5;border-radius:12px;padding:12px;margin-top:14px}
+@media(max-width:650px){.stats{gap:7px}.stat{padding:12px 6px}.clicker{grid-template-columns:1fr}.jararea{order:0}.clickinfo{order:1;text-align:center}.clickinfo .progress{max-width:400px;margin:12px auto}.clickinfo button{margin:3px}}
+</style>
+</head>
+<body>
+<header><div class="logo">🍯🐝</div><h1>Miodownik</h1><p>Wybierz swój ulubiony miód, a potem klikaj w słoik i nabijaj wynik!</p></header>
+<main class="wrap">
+  <section class="stats" aria-label="Statystyki">
+    <div class="stat"><span>Twoje kliknięcia</span><strong id="myClicks">0</strong></div>
+    <div class="stat"><span>Wybrany miód</span><strong id="selectedStat">Lipowy</strong></div>
+    <div class="stat"><span>Odblokowane miody</span><strong id="honeyCount">60</strong></div>
+  </section>
+  <section class="panel">
+    <h2>🌼 Wybierz miód</h2><p class="sub">Jest tu ponad 50 rodzajów — wyszukaj albo kliknij kartę.</p>
+    <div class="searchrow"><input id="search" type="search" placeholder="Szukaj miodu…" aria-label="Szukaj miodu"><select id="sort" aria-label="Sortuj miody"><option value="default">Kolejność domyślna</option><option value="az">Alfabetycznie A–Z</option></select></div>
+    <div class="grid" id="honeyGrid"></div>
+  </section>
+  <section class="panel">
+    <h2>🍯 Miodowy clicker</h2><p class="sub">Każde kliknięcie dodaje jeden punkt do Twojego wyniku.</p>
+    <div class="clicker">
+      <div class="jararea"><button class="jar" id="jar" aria-label="Kliknij słoik miodu">🍯</button><div class="tapnote">KLIKNIJ SŁOIK!</div></div>
+      <div class="clickinfo"><div class="selected" id="selectedName">Miód lipowy</div><div class="bigcount" id="clickCount">0</div><div>kliknięć miodowych</div><div class="progress"><div id="progressBar"></div></div><p class="sub" id="milestone">Następny cel: 100 kliknięć</p><button class="btn primary" id="bigClick">Kliknij miód 🍯</button> <button class="btn secondary" id="reset">Resetuj mój wynik</button></div>
+    </div>
+    <div class="notice"><b>Ważne:</b> ta wersja HTML zapisuje wynik w tej przeglądarce na tym urządzeniu. Żeby licznik był wspólny dla wszystkich osób w internecie i aktualizował się na żywo, strona potrzebuje jeszcze bazy danych i serwera/API — sam plik HTML nie może tego zapewnić.</div>
+  </section>
+</main>
+<footer>Stworzone z miodową energią 🍯 · Dane lokalne zapisują się automatycznie w przeglądarce.</footer>
+<script>
+const honeys = [
+["Lipowy","🌼","Kwiatowy i ziołowy"],["Akacjowy","🌿","Delikatny i jasny"],["Gryczany","🌾","Mocny, wyrazisty"],["Wielokwiatowy","🌸","Klasyczny bukiet"],["Spadziowy","🌲","Leśny aromat"],["Rzepakowy","🌻","Kremowy i łagodny"],["Wrzosowy","💜","Intensywny aromat"],["Faceliowy","💠","Lekko kwiatowy"],["Malinowy","🍓","Owocowo-kwiatowy"],["Mniszkowy","🌼","Wiosenny charakter"],
+["Koniczynowy","🍀","Łagodny smak"],["Lawendowy","💜","Kwiatowy zapach"],["Słonecznikowy","🌻","Pełny smak"],["Kasztanowy","🌰","Lekko gorzkawy"],["Eukaliptusowy","🌱","Ziołowy aromat"],["Manuka","🌿","Nowozelandzki klasyk"],["Tymian­kowy","🌱","Ziołowa nuta"],["Rozmarynowy","🌿","Śródziemnomorski"],["Pomarańczowy","🍊","Cytrusowy aromat"],["Cytrynowy","🍋","Świeża nuta"],
+["Szałwiowy","🌿","Aromatyczny"],["Koniczynowo-lucernowy","🍀","Delikatny"],["Lucernowy","🌱","Jasny i łagodny"],["Koniczynowy biały","🍀","Lekki smak"],["Koniczynowy czerwony","🌺","Kwiatowy"],["Jeżynowy","🫐","Leśne owoce"],["Borówkowy","🫐","Owocowy aromat"],["Żurawinowy","🍒","Lekko cierpki"],["Jeżynowo-malinowy","🍓","Owocowy bukiet"],["Kwiatowy z łąki","🌷","Łąkowe kwiaty"],
+["Kwiatowy z sadu","🌳","Wiosenny sad"],["Jabłoniowy","🍎","Delikatny aromat"],["Wiśniowy","🍒","Owocowa nuta"],["Gruszkowy","🍐","Łagodny"],["Migdałowy","🌰","Orzechowy aromat"],["Awokado","🥑","Kremowy"],["Kawowy","☕","Głęboki aromat"],["Kakaowy","🍫","Czekoladowa nuta"],["Miętowy","🌱","Świeży aromat"],["Bazylikowy","🌿","Ziołowy"],
+["Kolendrowy","🌿","Korzenna nuta"],["Koperkowy","🌿","Ziołowy aromat"],["Gorczycowy","🌼","Wyrazisty"],["Rumiankowy","🌼","Delikatny"],["Mietlikowy","🌸","Kwiatowy"],["Koniczynowo-faceliowy","💠","Łagodny bukiet"],["Górski","⛰️","Zioła i kwiaty"],["Alpejski","🏔️","Górski aromat"],["Leśny","🌲","Leśne nuty"],["Łąkowy","🌻","Kwiatowy bukiet"],
+["Tajga","🌲","Chłodny leśny aromat"],["Cedrowy","🌲","Drzewna nuta"],["Manuka premium","✨","Intensywny aromat"],["Miód z kwiatów kawowca","☕","Kwiatowy"],["Miód z kwiatów mango","🥭","Tropikalny"],["Miód z kwiatów lipy srebrzystej","🌳","Kwiatowy"],["Miód z kwiatów wiśni","🌸","Wiosenny"],["Miód z kwiatów gruszy","🍐","Owocowy"],["Miód z kwiatów wrzosu","💜","Intensywny"],["Miód z kwiatów pomarańczy","🍊","Cytrusowy"]
+];
+let clicks = Number(localStorage.getItem("miodownik_clicks") || 0);
+let selected = localStorage.getItem("miodownik_selected") || "Lipowy";
+const fmt = n => n.toLocaleString("pl-PL");
+function render(){
+ const q=document.getElementById("search").value.trim().toLocaleLowerCase("pl");
+ const list=honeys.filter(h=>h[0].toLocaleLowerCase("pl").includes(q));
+ if(document.getElementById("sort").value==="az") list.sort((a,b)=>a[0].localeCompare(b[0],"pl"));
+ document.getElementById("honeyGrid").innerHTML=list.map(h=>`<button class="honey ${selected===h[0]?'active':''}" data-name="${h[0].replaceAll('&','&amp;').replaceAll('"','&quot;')}"><span class="emoji">${h[1]}</span><b>${h[0]}</b><small>${h[2]}</small></button>`).join("");
+ document.querySelectorAll(".honey").forEach(el=>el.addEventListener("click",()=>{selected=el.dataset.name;localStorage.setItem("miodownik_selected",selected);update();render()}));
+ document.getElementById("honeyCount").textContent=honeys.length;
+}
+function update(){
+ document.getElementById("myClicks").textContent=fmt(clicks);
+ document.getElementById("clickCount").textContent=fmt(clicks);
+ document.getElementById("selectedStat").textContent=selected;
+ document.getElementById("selectedName").textContent="Miód "+selected.toLocaleLowerCase("pl");
+ document.getElementById("progressBar").style.width=(clicks%100)+"%";
+ document.getElementById("milestone").textContent="Następny cel: "+fmt((Math.floor(clicks/100)+1)*100)+" kliknięć";
+ localStorage.setItem("miodownik_clicks",String(clicks));
+}
+function clickHoney(){clicks++;update()}
+document.getElementById("jar").addEventListener("click",clickHoney);
+document.getElementById("bigClick").addEventListener("click",clickHoney);
+document.getElementById("search").addEventListener("input",render);
+document.getElementById("sort").addEventListener("change",render);
+document.getElementById("reset").addEventListener("click",()=>{if(confirm("Na pewno wyzerować swój wynik?")){clicks=0;update()}});
+window.addEventListener("storage",e=>{if(e.key==="miodownik_clicks"){clicks=Number(e.newValue||0);update()}if(e.key==="miodownik_selected"){selected=e.newValue||"Lipowy";render();update()}});
+render();update();
+</script>
+</body>
+</html>
